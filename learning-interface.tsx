@@ -1,46 +1,72 @@
 "use client"
 
+import type React from "react"
+
 import { useState } from "react"
-import { ResizablePanels } from "./components/resizable-panels"
+import { SourcesPanel } from "./components/sources-panel"
+import { ChatPanel } from "./components/chat-panel"
+import { StudioPanel } from "./components/studio-panel"
 import { JupyterLiteNotebook } from "./components/jupyterlite-notebook"
-import { PersonalizedContent } from "./components/personalized-content"
 import { ThemeToggle } from "./components/theme-toggle"
 import { Button } from "@/components/ui/button"
-import { Settings, HelpCircle, Code } from "lucide-react"
+import { Settings, Share, MoreHorizontal, Zap } from "lucide-react"
 
 export default function LearningInterface() {
-  const [theme, setTheme] = useState<"light" | "dark">("light")
+  const [theme, setTheme] = useState<"dark" | "light">("dark")
+  const [view, setView] = useState<"notebook" | "chat">("chat")
 
   return (
-    <div className={`h-screen flex flex-col ${theme === "dark" ? "dark" : ""}`}>
-      {/* Header */}
+    <div className={`h-screen flex flex-col ${theme === "dark" ? "dark" : ""} bg-background`}>
+      {/* Header - NotebookLM Style */}
       <header className="flex items-center justify-between p-4 border-b bg-background">
         <div className="flex items-center space-x-4">
           <div className="flex items-center space-x-2">
-            <Code className="h-6 w-6 text-primary" />
-            <h1 className="text-xl font-bold">AI Learning Lab</h1>
+            <div className="w-6 h-6 bg-primary rounded flex items-center justify-center">
+              <Zap className="h-4 w-4 text-primary-foreground" />
+            </div>
+            <span className="text-lg font-semibold">AI Learning Lab</span>
           </div>
-          <span className="text-sm text-muted-foreground">Personalized Python Notebook Experience</span>
+          <span className="text-sm text-muted-foreground">Untitled notebook</span>
         </div>
         <div className="flex items-center space-x-2">
-          <ThemeToggle theme={theme} onThemeChange={setTheme} />
           <Button variant="outline" size="sm">
-            <HelpCircle className="h-4 w-4 mr-2" />
-            Help
+            <Zap className="h-4 w-4 mr-2" />
+            New! Share publicly
           </Button>
           <Button variant="outline" size="sm">
-            <Settings className="h-4 w-4" />
+            <Share className="h-4 w-4 mr-2" />
+            Share
+          </Button>
+          <ThemeToggle theme={theme} onThemeChange={setTheme} />
+          <Button variant="outline" size="sm">
+            <Settings className="h-4 w-4 mr-2" />
+            Settings
+          </Button>
+          <Button variant="ghost" size="sm">
+            <MoreHorizontal className="h-4 w-4" />
           </Button>
         </div>
       </header>
 
-      {/* Main Content - Split Panel Layout */}
+      {/* Main Content - Three Panel Layout */}
       <div className="flex-1 overflow-hidden">
-        <ResizablePanels defaultSizes={[50, 50]} minSizes={[30, 30]}>
-          <JupyterLiteNotebook theme={theme} />
-          <PersonalizedContent />
-        </ResizablePanels>
+        <ThreePanelLayout>
+          <SourcesPanel />
+          {view === "chat" ? <ChatPanel /> : <JupyterLiteNotebook theme={theme} />}
+          <StudioPanel />
+        </ThreePanelLayout>
       </div>
+    </div>
+  )
+}
+
+// Three Panel Layout Component
+function ThreePanelLayout({ children }: { children: [React.ReactNode, React.ReactNode, React.ReactNode] }) {
+  return (
+    <div className="h-full flex">
+      <div className="w-80 border-r">{children[0]}</div>
+      <div className="flex-1 border-r">{children[1]}</div>
+      <div className="w-80">{children[2]}</div>
     </div>
   )
 }
