@@ -1,10 +1,9 @@
 "use client"
 
 import { useState } from "react"
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
+import { Card } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
-import { Badge } from "@/components/ui/badge"
-import { Plus, Search, FileText, Github, Upload, Link, Type } from "lucide-react"
+import { Plus, Search, FileText, Github, Copy, Check } from "lucide-react"
 
 interface Source {
   id: string
@@ -25,28 +24,142 @@ export function SourcesPanel() {
     },
   ])
 
-  const [showUploadModal, setShowUploadModal] = useState(false)
+  const [copiedCode, setCopiedCode] = useState<string | null>(null)
 
-  const handleAddSource = () => {
-    setShowUploadModal(true)
+  const codeExamples = [
+    {
+      title: "AI Agent Basics",
+      description: "Simple AI agent without API keys",
+      code: `# Simple AI Agent Simulation
+import random
+import json
+
+class SimpleAgent:
+    def __init__(self, name):
+        self.name = name
+        self.memory = []
+        self.responses = [
+            "That's interesting! Tell me more.",
+            "I understand your point.",
+            "Let me think about that...",
+            "That makes sense to me.",
+            "Can you elaborate on that?"
+        ]
+    
+    def respond(self, message):
+        self.memory.append(message)
+        response = random.choice(self.responses)
+        print(f"{self.name}: {response}")
+        return response
+    
+    def get_memory(self):
+        return self.memory
+
+# Create and test the agent
+agent = SimpleAgent("AI Assistant")
+agent.respond("Hello, how are you?")
+agent.respond("What do you think about AI?")
+print("Agent memory:", agent.get_memory())`,
+    },
+    {
+      title: "Data Analysis Starter",
+      description: "Basic data analysis with pandas",
+      code: `# Data Analysis with Pandas
+import pandas as pd
+import numpy as np
+import matplotlib.pyplot as plt
+
+# Create sample AI training data
+data = {
+    'model': ['GPT-3', 'BERT', 'T5', 'RoBERTa', 'GPT-4'],
+    'parameters': [175, 110, 220, 125, 1000],
+    'accuracy': [0.85, 0.88, 0.87, 0.89, 0.92],
+    'year': [2020, 2018, 2019, 2019, 2023]
+}
+
+df = pd.DataFrame(data)
+print("AI Models Dataset:")
+print(df)
+
+# Basic analysis
+print("\\nBasic Statistics:")
+print(df.describe())
+
+# Simple visualization
+plt.figure(figsize=(10, 6))
+plt.scatter(df['parameters'], df['accuracy'], s=100)
+for i, model in enumerate(df['model']):
+    plt.annotate(model, (df['parameters'][i], df['accuracy'][i]))
+plt.xlabel('Parameters (Billions)')
+plt.ylabel('Accuracy')
+plt.title('AI Model Performance')
+plt.show()`,
+    },
+    {
+      title: "Python Basics for AI",
+      description: "Essential Python concepts for AI development",
+      code: `# Python Basics for AI Development
+print("🐍 Python Basics for AI")
+print("=" * 30)
+
+# 1. Lists and Data Structures
+models = ["GPT", "BERT", "T5", "Claude"]
+print(f"AI Models: {models}")
+
+# 2. Dictionaries for structured data
+model_info = {
+    "name": "GPT-4",
+    "type": "Language Model",
+    "parameters": "1T+",
+    "capabilities": ["text", "code", "reasoning"]
+}
+print(f"Model Info: {model_info}")
+
+# 3. Functions for reusable code
+def calculate_accuracy(correct, total):
+    return (correct / total) * 100
+
+accuracy = calculate_accuracy(85, 100)
+print(f"Model Accuracy: {accuracy}%")
+
+# 4. Classes for AI agents
+class AIModel:
+    def __init__(self, name, type_):
+        self.name = name
+        self.type = type_
+        self.trained = False
+    
+    def train(self):
+        self.trained = True
+        print(f"{self.name} is now trained!")
+    
+    def predict(self, input_data):
+        if self.trained:
+            return f"Prediction for: {input_data}"
+        return "Model needs training first!"
+
+# Create and use the model
+my_model = AIModel("CustomGPT", "Language Model")
+my_model.train()
+result = my_model.predict("Hello world")
+print(result)`,
+    },
+  ]
+
+  const copyToClipboard = async (code: string, title: string) => {
+    try {
+      await navigator.clipboard.writeText(code)
+      setCopiedCode(title)
+      setTimeout(() => setCopiedCode(null), 2000)
+    } catch (err) {
+      console.error("Failed to copy code:", err)
+    }
   }
 
-  const handleUploadNotebook = () => {
-    // Handle notebook upload
-    console.log("Upload notebook")
-    setShowUploadModal(false)
-  }
-
-  const handleAddLink = () => {
-    // Handle adding link
-    console.log("Add link")
-    setShowUploadModal(false)
-  }
-
-  const handlePasteText = () => {
-    // Handle paste text
-    console.log("Paste text")
-    setShowUploadModal(false)
+  const handleSourceClick = (source: Source) => {
+    if (source.url) {
+      window.open(source.url, "_blank")
+    }
   }
 
   return (
@@ -54,114 +167,103 @@ export function SourcesPanel() {
       {/* Header */}
       <div className="p-4 border-b">
         <div className="flex items-center justify-between mb-4">
-          <h2 className="text-lg font-semibold">Sources</h2>
-          <Button variant="ghost" size="sm">
-            <Search className="h-4 w-4" />
-          </Button>
+          <h2 className="text-lg font-semibold">Python Notebook Runner</h2>
         </div>
-        <div className="flex space-x-2">
-          <Button onClick={handleAddSource} size="sm" className="flex-1">
+        <p className="text-xs text-muted-foreground mb-4">Run Python notebooks directly in your browser</p>
+
+        <div className="space-y-2">
+          <h3 className="text-sm font-medium">Quick Start</h3>
+          <p className="text-xs text-muted-foreground">Get started with Python notebooks</p>
+        </div>
+      </div>
+
+      {/* Quick Actions */}
+      <div className="p-4 border-b">
+        <div className="space-y-2">
+          <Button
+            variant="default"
+            size="sm"
+            className="w-full justify-start"
+            onClick={() => handleSourceClick(sources[0])}
+          >
+            <FileText className="h-4 w-4 mr-2" />
+            Your Agentic AI Notebook
+          </Button>
+          <p className="text-xs text-muted-foreground">Open your hello_agent.ipynb in Colab</p>
+
+          <Button
+            variant="outline"
+            size="sm"
+            className="w-full justify-start"
+            onClick={() => window.open("https://jupyterlite.github.io/demo/lab/index.html", "_blank")}
+          >
             <Plus className="h-4 w-4 mr-2" />
-            Add
+            New JupyterLite Notebook
           </Button>
-          <Button variant="outline" size="sm" className="flex-1">
+          <p className="text-xs text-muted-foreground">Create a new Python notebook</p>
+
+          <Button
+            variant="outline"
+            size="sm"
+            className="w-full justify-start"
+            onClick={() => window.open("https://github.com/panaversity/learn-agentic-ai", "_blank")}
+          >
+            <Github className="h-4 w-4 mr-2" />
+            Full Repository
+          </Button>
+          <p className="text-xs text-muted-foreground">Browse all Agentic AI lessons</p>
+
+          <Button
+            variant="outline"
+            size="sm"
+            className="w-full justify-start"
+            onClick={() => window.open("https://jupyterlite.readthedocs.io/en/stable/quickstart/index.html", "_blank")}
+          >
             <Search className="h-4 w-4 mr-2" />
-            Discover
+            JupyterLite Examples
           </Button>
+          <p className="text-xs text-muted-foreground">Pre-built example notebooks</p>
         </div>
       </div>
 
-      {/* Sources List */}
-      <div className="flex-1 p-4">
-        {sources.length > 0 ? (
-          <div className="space-y-3">
-            {sources.map((source) => (
-              <Card key={source.id} className="p-3 hover:bg-muted/50 cursor-pointer">
-                <div className="flex items-start space-x-3">
-                  <div className="mt-1">
-                    {source.type === "notebook" && <FileText className="h-4 w-4 text-blue-500" />}
-                    {source.type === "pdf" && <FileText className="h-4 w-4 text-red-500" />}
-                    {source.type === "link" && <Link className="h-4 w-4 text-green-500" />}
-                    {source.type === "text" && <Type className="h-4 w-4 text-purple-500" />}
-                  </div>
-                  <div className="flex-1 min-w-0">
-                    <p className="text-sm font-medium truncate">{source.name}</p>
-                    <div className="flex items-center space-x-2 mt-1">
-                      <Badge variant={source.status === "ready" ? "default" : "secondary"} className="text-xs">
-                        {source.status}
-                      </Badge>
-                      <span className="text-xs text-muted-foreground capitalize">{source.type}</span>
-                    </div>
-                  </div>
+      {/* Code Examples */}
+      <div className="flex-1 p-4 overflow-y-auto">
+        <div className="space-y-4">
+          <div>
+            <h3 className="text-sm font-medium mb-2">Notebook Templates</h3>
+            <p className="text-xs text-muted-foreground mb-4">Copy these into JupyterLite to get started</p>
+          </div>
+
+          {codeExamples.map((example, index) => (
+            <Card key={index} className="p-3">
+              <div className="flex items-start justify-between mb-2">
+                <div>
+                  <h4 className="text-sm font-medium">{example.title}</h4>
+                  <p className="text-xs text-muted-foreground">{example.description}</p>
                 </div>
-              </Card>
-            ))}
-          </div>
-        ) : (
-          <div className="flex flex-col items-center justify-center h-full text-center">
-            <FileText className="h-12 w-12 text-muted-foreground mb-4" />
-            <p className="text-sm font-medium mb-2">Saved sources will appear here</p>
-            <p className="text-xs text-muted-foreground mb-4">
-              Click Add source above to add notebooks, PDFs, websites, text, or audio files. Or import a file directly
-              from your device.
-            </p>
-          </div>
-        )}
-      </div>
-
-      {/* Upload Modal */}
-      {showUploadModal && (
-        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
-          <Card className="w-full max-w-2xl mx-4">
-            <CardHeader>
-              <CardTitle>Add sources</CardTitle>
-              <p className="text-sm text-muted-foreground">
-                Sources let the AI base its responses on the information that matters most to you.
-                <br />
-                (Examples: notebooks, course reading, research notes, meeting transcripts, etc.)
-              </p>
-            </CardHeader>
-            <CardContent>
-              <div className="border-2 border-dashed border-muted-foreground/25 rounded-lg p-8 text-center mb-6">
-                <Upload className="h-8 w-8 text-primary mx-auto mb-4" />
-                <h3 className="text-lg font-medium mb-2">Upload sources</h3>
-                <p className="text-sm text-muted-foreground mb-4">
-                  Drag & drop or{" "}
-                  <button className="text-primary hover:underline" onClick={handleUploadNotebook}>
-                    choose file
-                  </button>{" "}
-                  to upload
-                </p>
-                <p className="text-xs text-muted-foreground">
-                  Supported file types: Notebooks (.ipynb), PDF, .txt, Markdown, Audio (e.g. mp3), .png, .jpg, .jpeg
-                </p>
-              </div>
-
-              <div className="grid grid-cols-3 gap-4">
-                <Button variant="outline" className="h-16 flex-col" onClick={handleUploadNotebook}>
-                  <Github className="h-5 w-5 mb-2" />
-                  <span className="text-sm">GitHub Notebook</span>
-                </Button>
-                <Button variant="outline" className="h-16 flex-col" onClick={handleAddLink}>
-                  <Link className="h-5 w-5 mb-2" />
-                  <span className="text-sm">Link</span>
-                </Button>
-                <Button variant="outline" className="h-16 flex-col" onClick={handlePasteText}>
-                  <Type className="h-5 w-5 mb-2" />
-                  <span className="text-sm">Paste text</span>
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={() => copyToClipboard(example.code, example.title)}
+                  className="h-8 w-8 p-0"
+                >
+                  {copiedCode === example.title ? (
+                    <Check className="h-3 w-3 text-green-500" />
+                  ) : (
+                    <Copy className="h-3 w-3" />
+                  )}
                 </Button>
               </div>
-
-              <div className="flex justify-end space-x-2 mt-6">
-                <Button variant="outline" onClick={() => setShowUploadModal(false)}>
-                  Cancel
-                </Button>
-                <Button onClick={() => setShowUploadModal(false)}>Done</Button>
+              <div className="bg-muted/50 rounded p-2 text-xs font-mono overflow-x-auto">
+                <pre className="whitespace-pre-wrap text-xs">
+                  {example.code.split("\n").slice(0, 4).join("\n")}
+                  {example.code.split("\n").length > 4 && "\n..."}
+                </pre>
               </div>
-            </CardContent>
-          </Card>
+            </Card>
+          ))}
         </div>
-      )}
+      </div>
     </div>
   )
 }
