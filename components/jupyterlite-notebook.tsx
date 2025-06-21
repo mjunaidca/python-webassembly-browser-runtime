@@ -93,7 +93,7 @@ export function JupyterLiteNotebook({ theme = "light" }: JupyterLiteNotebookProp
               <RefreshCw className="h-8 w-8 animate-spin" />
               <div className="text-center">
                 <p className="font-medium">Loading Python Environment...</p>
-                <p className="text-xs text-muted-foreground">Setting up your notebook</p>
+                <p className="text-xs text-muted-foreground">Setting up python.ipynb</p>
                 <p className="text-xs text-muted-foreground mt-1">This may take 30-60 seconds</p>
               </div>
             </div>

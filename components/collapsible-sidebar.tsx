@@ -1,10 +1,8 @@
 "use client"
 
 import React from "react"
-
 import { useState } from "react"
 import { Button } from "@/components/ui/button"
-import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet"
 import { ChevronLeft, ChevronRight, Settings, Palette } from "lucide-react"
 import { cn } from "@/lib/utils"
 
@@ -42,21 +40,31 @@ export function CollapsibleSidebar({
 
   if (isMobile) {
     return (
-      <Sheet>
-        <SheetTrigger asChild>
-          <Button
-            variant="outline"
-            size="sm"
-            className="fixed top-20 z-50 bg-background/95 backdrop-blur-sm border shadow-md"
-            style={{ [side]: "1rem" }}
-          >
-            {side === "left" ? <Settings className="h-4 w-4" /> : <Palette className="h-4 w-4" />}
-          </Button>
-        </SheetTrigger>
-        <SheetContent side={side} className="w-80 p-0">
-          {children}
-        </SheetContent>
-      </Sheet>
+      <div className="relative">
+        <Button
+          variant="outline"
+          size="sm"
+          onClick={handleToggle}
+          className="fixed top-20 z-50 bg-background/95 backdrop-blur-sm border shadow-md"
+          style={{ [side]: "1rem" }}
+        >
+          {side === "left" ? <Settings className="h-4 w-4" /> : <Palette className="h-4 w-4" />}
+        </Button>
+
+        {isOpen && (
+          <>
+            <div className="fixed inset-0 bg-black/50 z-40" onClick={handleToggle} />
+            <div
+              className={cn(
+                "fixed top-0 h-full bg-background border-r z-50 w-80",
+                side === "left" ? "left-0" : "right-0",
+              )}
+            >
+              {children}
+            </div>
+          </>
+        )}
+      </div>
     )
   }
 
